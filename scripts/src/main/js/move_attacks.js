@@ -10,11 +10,10 @@
     moveAttacks.init = init;
 
     function init($) {
-        console.error($);
-        $('#map_details .boxes-contents').append('<p>Test</p>');
+        $('#map_details .movements .cf').append('<button class="green" id="moveAttacksButton" value="Отправить в tac_tool" type="button"><div class="button-container addHoverClick "><div class="button-background"><div class="buttonStart"><div class="buttonEnd"><div class="buttonMiddle"></div></div></div></div><div class="button-content">Отправить в tac_tool</div></div></button>');
+
+
     }
-
-
 
 
 }(window.moveAttacks = window.moveAttacks || {}));
