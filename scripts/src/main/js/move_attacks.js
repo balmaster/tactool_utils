@@ -6,11 +6,15 @@
  * To change this template use File | Settings | File Templates.
  */
 
-(function (moveAttacks, $) {
+(function (moveAttacks) {
     moveAttacks.init = init;
 
-    function init() {
-        alert("move attacks initialized");
+    function init($) {
+        console.error($);
+        $('#map_details .boxes-contents').append('<p>Test</p>');
     }
 
-}(window.moveAttacks = window.moveAttacks || {}, jQuery));
+
+
+
+}(window.moveAttacks = window.moveAttacks || {}));

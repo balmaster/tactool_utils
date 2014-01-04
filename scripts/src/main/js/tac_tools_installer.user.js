@@ -33,15 +33,15 @@ function GM_wait() {
         window.setTimeout(GM_wait, 100);
     } else {
         $ = unsafeWindow.jQuery.noConflict(true);
-        letsJQuery();
+        letsJQuery($);
     }
 }
 
 // All your GM code must be inside this function
-function letsJQuery() {
+function letsJQuery($) {
 
     $.getScript(SCRIPTS_BASE + 'move_attacks.js',function(){
-        unsafeWindow.moveAttacks.init();
+        unsafeWindow.moveAttacks.init($);
     });
 }
 
