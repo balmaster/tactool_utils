@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name        travian dropper
+// @name        tac_tools_installer
 // @namespace   tactool_utils
 // @description load scripts
 // @include     https://ts8.travian.ru/*
 // @include     http://ts8.travian.ru/*
+// @author      balmaster
 // @version     1.0.0-1
 // ==/UserScript==
 
@@ -38,13 +39,9 @@ function GM_wait() {
 
 // All your GM code must be inside this function
 function letsJQuery() {
-    $.when(
-            $.getScript(SCRIPTS_BASE + 'move_attacks.js'),
-            $.Deferred(function (deferred) {
-                $(deferred.resolve);
-            })
-        ).done(function () {
-            alert('scripts loaded');
-        });
+
+    $.getScript(SCRIPTS_BASE + 'move_attacks.js',function(){
+        unsafeWindow.moveAttacks.init();
+    });
 }
 
