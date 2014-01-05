@@ -2,8 +2,7 @@
 // @name        tac_tools_installer
 // @namespace   tactool_utils
 // @description load scripts
-// @include     https://ts8.travian.ru/*
-// @include     http://ts8.travian.ru/*
+// @include     http://ts8.travian.ru/dorf1.php*
 // @author      balmaster
 // @version     1.0.0-1
 // ==/UserScript==
