@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        tac_tools_installer
+// @name        tactool_installer
 // @namespace   tactool_utils
 // @description load scripts
 // @include     http://ts8.travian.ru/dorf1.php*
@@ -98,12 +98,14 @@ function gmRequest(url, params, success, error) {
     if (params) {
         var data = '';
         for (n in params) {
-            data += '&' + n + '=' + encodeURIComponent(params[n]);
+            data += '&' + n + '=' + params[n];//+ //encodeURIComponent(params[n]);
         }
         options.headers["Content-type"] = "application/x-www-form-urlencoded";
         options.headers["Content-length"] = data.length;
         options.data = data;
     }
+
+    console.error(data);
 
     setTimeout(function(){
         GM_xmlhttpRequest(options);
@@ -222,10 +224,13 @@ function handleAttacks() {
 
     var coords = $("#sidebarBoxVillagelist li.active span span");
 
-    x = coords[0].textContent.replace("(","");
-    y = coords[2].textContent.replace(")","");
-    //console.error(x + " | " + y);
+    x = Number(clearCoord(coords[0].textContent));
+    y = Number(clearCoord(coords[2].textContent));
+    //console.error(x + "|" + y);
 
     handleAttacksPage(1);
 }
 
+function clearCoord(value) {
+    return value.replace(/[\(\)\u202d\u202c]/g,"");
+}
