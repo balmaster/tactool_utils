@@ -43,13 +43,9 @@ function GM_wait() {
 
 // All your GM code must be inside this function
 function letsJQuery() {
-
-    $.getScript(SCRIPTS_BASE + 'move_attacks.js',function(){
-        unsafeWindow.moveAttacks.init(
-            {
-                jquery:$,
-                GM_xmlhttpRequest:GM_xmlhttpRequest
-            },userSettings);
+    $('#map_details .movements .cf').append('<button class="green" id="moveAttacksButton" value="Отправить в tactool.net" type="button"><div class="button-container addHoverClick "><div class="button-background"><div class="buttonStart"><div class="buttonEnd"><div class="buttonMiddle"></div></div></div></div><div class="button-content">Отправить в tactool.net</div></div></button>');
+    $("#moveAttacksButton").click(function () {
+        handleAttacks();
     });
 }
 
@@ -57,22 +53,6 @@ function letsJQuery() {
 var SEND_MIN_INTERVAL = 1000 * 1;
 var SEND_INTERVAL = 1000 * 2;
 var URL_TACTOOL_ATTACK_INPUT_VIEWER = "http://tactool.net/D/AttackInputViewer.php";
-
-moveAttacks.init = init;
-var $;
-var GM_xmlhttpRequest;
-var userSettings;
-
-function init(params, _userSettings) {
-    $ = params.jquery;
-    GM_xmlhttpRequest = params.GM_xmlhttpRequest;
-    userSettings = _userSettings;
-    $('#map_details .movements .cf').append('<button class="green" id="moveAttacksButton" value="Отправить в tactool.net" type="button"><div class="button-container addHoverClick "><div class="button-background"><div class="buttonStart"><div class="buttonEnd"><div class="buttonMiddle"></div></div></div></div><div class="button-content">Отправить в tactool.net</div></div></button>');
-    $("#moveAttacksButton").click(function () {
-        handleAttacks();
-    });
-}
-
 
 function ajaxRequest(url, options) {
     if (!options.type) {
@@ -126,7 +106,9 @@ function gmRequest(url, params, success, error) {
         options.data = data;
     }
 
-    GM_xmlhttpRequest(options);
+    setTimeout(function(){
+        GM_xmlhttpRequest(options);
+    },0);
 }
 
 function gmHtmlRequest(url, params, responseHandler) {
@@ -148,13 +130,13 @@ function requestBuildPage(gid, filter, tt, page, handler) {
 }
 
 function handleAttacks() {
-    var x = 97, y = -164;
+    var x, y;
     var content = "";
     var attacksCount = 0;
 
     function sendContent() {
-        alert("Собрана информация о " + attacksCount + " нападениях. Нажмите на ок для загрузки.")
-        console.error(content);
+        //alert("Собрана информация о " + attacksCount + " нападениях. Нажмите на ок для загрузки.")
+        //console.error(content);
 
         gmHtmlRequest(URL_TACTOOL_ATTACK_INPUT_VIEWER,
             {
@@ -163,11 +145,22 @@ function handleAttacks() {
                 x: x,
                 y: y
             }, function (responseDom) {
-                alert(responseDom);
+                params = {};
+                $(responseDom).find("form textarea").each(function (i, textarea) {
+                    var $textarea = $(textarea);
+                    params[$textarea.attr("name")] = $textarea.val();
+                    //console.error($textarea.attr("name"));
+                    //console.error($textarea.val());
+                });
 
-                //gmHtmlRequest(userSettings.DEFLIST_URL + "&code=0", undefined, function (responseDom) {
-                //    alert("Информация о " + attacksCount + " нападениях внесена.")
-                //});
+                if(params.waves && params.deffer) {
+                    gmHtmlRequest(URL_TACTOOL_ATTACK_INPUT_VIEWER, params, function (responseDom) {
+                        alert("Информация о " + attacksCount + " нападениях внесена.")
+                    });
+                }
+                else {
+                    alert("Ошибка при добавлении нападений.")
+                }
             });
     }
 
@@ -227,6 +220,12 @@ function handleAttacks() {
             });
         }, Math.floor(SEND_MIN_INTERVAL + SEND_INTERVAL * Math.random()));
     }
+
+    var coords = $("#sidebarBoxVillagelist li.active span span");
+
+    x = coords[0].textContent.replace("(","");
+    y = coords[2].textContent.replace(")","");
+    //console.error(x + " | " + y);
 
     handleAttacksPage(1);
 }
