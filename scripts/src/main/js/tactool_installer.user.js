@@ -10,7 +10,7 @@
 var SCRIPTS_BASE = "http://localhost:8000/";
 
 var userSettings = {
-    DEFLIST_ID: 651373264
+    DEFLIST_URL: "http://tactool.net/D/?h=jd6amg"
 };
 
 var $;
@@ -86,7 +86,7 @@ function htmlRequest(url, requestData, responseHandler) {
         });
 }
 
-function gmRequest(url, params, success, error) {
+function gmRequest(url, params, success, error, referer) {
     var options = {
         url: url,
         method: ( !params ? 'GET' : 'POST' ),
@@ -98,30 +98,32 @@ function gmRequest(url, params, success, error) {
     if (params) {
         var data = '';
         for (n in params) {
-            data += '&' + n + '=' + params[n];//+ //encodeURIComponent(params[n]);
+            if(data.length>0) data += '&'
+            data += n + '=' + encodeURIComponent(params[n]);
         }
         options.headers["Content-type"] = "application/x-www-form-urlencoded";
         options.headers["Content-length"] = data.length;
         options.data = data;
     }
-
-    console.error(data);
+    if(referer) {
+        options.headers["Referer"] = referer;
+    }
 
     setTimeout(function(){
         GM_xmlhttpRequest(options);
     },0);
 }
 
-function gmHtmlRequest(url, params, responseHandler) {
+function gmHtmlRequest(url, params, responseHandler, referer) {
     function parseResponse(response) {
-        responseHandler($.parseHTML(response.responseText));
+        responseHandler(response.responseText);
     }
 
     function transportError(response) {
         console.error("ошибка" + response);
     }
 
-    return gmRequest(url, params, parseResponse, transportError);
+    return gmRequest(url, params, parseResponse, transportError, referer);
 }
 
 function requestBuildPage(gid, filter, tt, page, handler) {
@@ -137,32 +139,52 @@ function handleAttacks() {
 
     function sendContent() {
         //alert("Собрана информация о " + attacksCount + " нападениях. Нажмите на ок для загрузки.")
-        //console.error(content);
+        console.error(content);
 
-        gmHtmlRequest(URL_TACTOOL_ATTACK_INPUT_VIEWER,
-            {
-                attacks: content,
-                idL: userSettings.DEFLIST_ID,
-                x: x,
-                y: y
-            }, function (responseDom) {
-                params = {};
-                $(responseDom).find("form textarea").each(function (i, textarea) {
-                    var $textarea = $(textarea);
-                    params[$textarea.attr("name")] = $textarea.val();
-                    //console.error($textarea.attr("name"));
-                    //console.error($textarea.val());
-                });
+        gmHtmlRequest(userSettings.DEFLIST_URL,undefined,function(response) {
+            var responseDom = $.parseHTML(response);
+            var idl = $($(responseDom).find("input[name=idL]")[0]).val();
+            console.error(idl);
 
-                if(params.waves && params.deffer) {
-                    gmHtmlRequest(URL_TACTOOL_ATTACK_INPUT_VIEWER, params, function (responseDom) {
-                        alert("Информация о " + attacksCount + " нападениях внесена.")
+            gmHtmlRequest(URL_TACTOOL_ATTACK_INPUT_VIEWER,
+                {
+                    attacks: content,
+                    idL: idl,
+                    x: x,
+                    y: y
+                }, function (response) {
+                    var responseDom = $.parseHTML(response);
+                    params = {};
+                    $(responseDom).find("form textarea").each(function (i, textarea) {
+                        var $textarea = $(textarea);
+                        params[$textarea.attr("name")] = $textarea.val();
+                        //console.error($textarea.attr("name"));
+                        //console.error($textarea.val());
                     });
-                }
-                else {
-                    alert("Ошибка при добавлении нападений.")
-                }
-            });
+
+                    if(params.waves && params.deffer) {
+                        gmHtmlRequest(URL_TACTOOL_ATTACK_INPUT_VIEWER, params, function (response) {
+                            // parse meta
+                            var m = response.match(/code=(\d+)/i);
+                            if(m) {
+                                var code = m[1];
+                                if(code === "0") {
+                                    alert("Информация о " + attacksCount + " нападениях внесена.");
+                                }
+                                else {
+                                    alert("ошибка: " + code);
+                                }
+                            }
+                            else {
+                                alert("ошибка: " + response);
+                            }
+                        },URL_TACTOOL_ATTACK_INPUT_VIEWER);
+                    }
+                    else {
+                        alert("Ошибка при добавлении нападений.")
+                    }
+                },userSettings.DEFLIST_URL);
+        });
     }
 
     function handleAttacksPage(page) {
