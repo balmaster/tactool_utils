@@ -16,7 +16,7 @@ var userSettings = {
 var $;
 
 // Add jQuery
-(function(){
+(function () {
     if (typeof unsafeWindow.jQuery == 'undefined') {
         var GM_Head = document.getElementsByTagName('head')[0] || document.documentElement,
             GM_JQ = document.createElement('script');
@@ -42,10 +42,39 @@ function GM_wait() {
 
 // All your GM code must be inside this function
 function letsJQuery() {
+    function bindButtonEvents(button) {
+        var buttonHover = $(button).find('.addHoverClick').first();
+        if (!buttonHover) {
+            buttonHover = button;
+        }
+
+        button.mouseenter(function () {
+            buttonHover.addClass('hover');
+            buttonHover.removeClass('click')
+        });
+        button.mouseleave( function () {
+            buttonHover.removeClass('hover');
+            buttonHover.removeClass('click')
+        });
+        button.mousedown( function () {
+            buttonHover.removeClass('hover');
+            buttonHover.addClass('click')
+        });
+        button.mouseup( function () {
+            buttonHover.addClass('hover');
+            buttonHover.removeClass('click')
+        });
+    }
+
     $('#map_details .movements .cf').append('<button class="green" id="moveAttacksButton" value="Отправить в tactool.net" type="button"><div class="button-container addHoverClick "><div class="button-background"><div class="buttonStart"><div class="buttonEnd"><div class="buttonMiddle"></div></div></div></div><div class="button-content">Отправить в tactool.net</div></div></button>');
-    $("#moveAttacksButton").click(function () {
+
+    var $moveAttacksButton = $("#moveAttacksButton");
+    bindButtonEvents($moveAttacksButton);
+
+    $moveAttacksButton.click(function () {
         handleAttacks();
     });
+
 }
 
 
@@ -90,28 +119,30 @@ function gmRequest(url, params, success, error, referer) {
     var options = {
         url: url,
         method: ( !params ? 'GET' : 'POST' ),
-        headers:{},
+        headers: {},
         onload: success,
         onerror: error,
-        onabort:function(e) {console.error(e);}
+        onabort: function (e) {
+            console.error(e);
+        }
     };
     if (params) {
         var data = '';
         for (n in params) {
-            if(data.length>0) data += '&'
+            if (data.length > 0) data += '&'
             data += n + '=' + encodeURIComponent(params[n]);
         }
         options.headers["Content-type"] = "application/x-www-form-urlencoded";
         options.headers["Content-length"] = data.length;
         options.data = data;
     }
-    if(referer) {
+    if (referer) {
         options.headers["Referer"] = referer;
     }
 
-    setTimeout(function(){
+    setTimeout(function () {
         GM_xmlhttpRequest(options);
-    },0);
+    }, 0);
 }
 
 function gmHtmlRequest(url, params, responseHandler, referer) {
@@ -141,7 +172,7 @@ function handleAttacks() {
         //alert("Собрана информация о " + attacksCount + " нападениях. Нажмите на ок для загрузки.")
         console.error(content);
 
-        gmHtmlRequest(userSettings.DEFLIST_URL,undefined,function(response) {
+        gmHtmlRequest(userSettings.DEFLIST_URL, undefined, function (response) {
             var responseDom = $.parseHTML(response);
             var idl = $($(responseDom).find("input[name=idL]")[0]).val();
             console.error(idl);
@@ -162,13 +193,13 @@ function handleAttacks() {
                         //console.error($textarea.val());
                     });
 
-                    if(params.waves && params.deffer) {
+                    if (params.waves && params.deffer) {
                         gmHtmlRequest(URL_TACTOOL_ATTACK_INPUT_VIEWER, params, function (response) {
                             // parse meta
                             var m = response.match(/code=(\d+)/i);
-                            if(m) {
+                            if (m) {
                                 var code = m[1];
-                                if(code === "0") {
+                                if (code === "0") {
                                     alert("Информация о " + attacksCount + " нападениях внесена.");
                                 }
                                 else {
@@ -178,12 +209,12 @@ function handleAttacks() {
                             else {
                                 alert("ошибка: " + response);
                             }
-                        },URL_TACTOOL_ATTACK_INPUT_VIEWER);
+                        }, URL_TACTOOL_ATTACK_INPUT_VIEWER);
                     }
                     else {
                         alert("Ошибка при добавлении нападений.")
                     }
-                },userSettings.DEFLIST_URL);
+                }, userSettings.DEFLIST_URL);
         });
     }
 
@@ -254,5 +285,5 @@ function handleAttacks() {
 }
 
 function clearCoord(value) {
-    return value.replace(/[\(\)\u202d\u202c]/g,"");
+    return value.replace(/[\(\)\u202d\u202c]/g, "");
 }
