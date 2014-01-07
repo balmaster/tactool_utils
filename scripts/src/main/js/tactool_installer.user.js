@@ -5,43 +5,17 @@
 // @include     http://ts8.travian.ru/dorf1.php*
 // @author      balmaster
 // @version     1.0.0-1
+// @require  http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js
 // ==/UserScript==
-
-var SCRIPTS_BASE = "http://localhost:8000/";
 
 var userSettings = {
     DEFLIST_URL: "http://tactool.net/D/?h=jd6amg"
 };
 
-var $;
+install();
 
-// Add jQuery
-(function () {
-    if (typeof unsafeWindow.jQuery == 'undefined') {
-        var GM_Head = document.getElementsByTagName('head')[0] || document.documentElement,
-            GM_JQ = document.createElement('script');
 
-        GM_JQ.src = 'http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js';
-        GM_JQ.type = 'text/javascript';
-        GM_JQ.async = true;
-
-        GM_Head.insertBefore(GM_JQ, GM_Head.firstChild);
-    }
-    GM_wait();
-})();
-
-// Check if jQuery's loaded
-function GM_wait() {
-    if (typeof unsafeWindow.jQuery == 'undefined') {
-        window.setTimeout(GM_wait, 100);
-    } else {
-        $ = unsafeWindow.jQuery.noConflict(true);
-        letsJQuery();
-    }
-}
-
-// All your GM code must be inside this function
-function letsJQuery() {
+function install() {
     function bindButtonEvents(button) {
         var buttonHover = $(button).find('.addHoverClick').first();
         if (!buttonHover) {
@@ -81,6 +55,7 @@ function letsJQuery() {
 var SEND_MIN_INTERVAL = 1000 * 1;
 var SEND_INTERVAL = 1000 * 2;
 var URL_TACTOOL_ATTACK_INPUT_VIEWER = "http://tactool.net/D/AttackInputViewer.php";
+var URL_TACTOOL_ATTACK_INPUT_CODE = "http://tactool.net/D/AttackInputCode.php";
 
 function ajaxRequest(url, options) {
     if (!options.type) {
@@ -194,7 +169,7 @@ function handleAttacks() {
                     });
 
                     if (params.waves && params.deffer) {
-                        gmHtmlRequest(URL_TACTOOL_ATTACK_INPUT_VIEWER, params, function (response) {
+                        gmHtmlRequest(URL_TACTOOL_ATTACK_INPUT_CODE, params, function (response) {
                             // parse meta
                             var m = response.match(/code=(\d+)/i);
                             if (m) {
